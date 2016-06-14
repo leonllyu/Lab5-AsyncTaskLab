@@ -1,16 +1,16 @@
 package course.labs.asynctasklab;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class DownloaderTaskFragment extends Fragment {
 
@@ -32,11 +32,12 @@ public class DownloaderTaskFragment extends Fragment {
 		
 		// TODO: Retrieve arguments from DownloaderTaskFragment
 
-		// the friend selected
-		mFeedView = (TextView) findViewById(R.id.TextView);
+		Bundle args = getArguments();
+		ArrayList<Integer> friendResIdList =
+				args.getIntegerArrayList(MainActivity.TAG_FRIEND_RES_IDS);
 
 		// TODO: Start the DownloaderTask
-		downloads.execute(R.drawable.painter);
+		downloads.execute(friendResIdList);
 	}
 
 	// Assign current hosting Activity to mCallback
@@ -69,7 +70,7 @@ public class DownloaderTaskFragment extends Fragment {
 	// out). Ultimately, it must also pass newly available data back to 
 	// the hosting Activity using the DownloadFinishedListener interface.
 
-	private class DownloaderTask extends AsyncTask<Integer[], Void, String[]> {
+	private class DownloaderTask extends AsyncTask<ArrayList<Integer>, Void, String[]> {
 
 		@Override
 		protected void onPreExecute() {
@@ -77,15 +78,18 @@ public class DownloaderTaskFragment extends Fragment {
 		}
 
 		@Override
-		protected String[] doInBackground(Integer... resourceIDs) {
+		protected String[] doInBackground(ArrayList<Integer>... params)
+		{
+			Integer[] paramsArray =
+					params[0].toArray(new Integer[params[0].size()]);
 
-			String[] data = downloadTweets(resourceIDs);
-			return data;
+			String[] results = downloadTweets(paramsArray);
+			return results;
 		}
 
-		@Override
-		protected void onProgressUpdate(Integer... progress) {
-		}
+		//@Override
+		//protected void onProgressUpdate(Integer... progress) {
+		//}
 
 		@Override
 		protected void onPostExecute(String[] result) {
@@ -93,9 +97,9 @@ public class DownloaderTaskFragment extends Fragment {
 			mCallback.notifyDataRefreshed(result);
 		}
 
-		@Override
-		void onCancelled(String[] result) {
-		}
+		//@Override
+		//void onCancelled(String[] result) {
+		//}
 
 		// TODO: Uncomment this helper method
 		// Simulates downloading Twitter data from the network
@@ -125,9 +129,6 @@ public class DownloaderTaskFragment extends Fragment {
 					}
 
 					feeds[idx] = buf.toString();
-
-					// added to show progress, published to UI thread
-					publishProgress((int) (((idx+1) / (float) resourceIDS.length) * 100));
 
 					if (null != in) {
 						in.close();
